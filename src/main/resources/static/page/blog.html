@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+    <meta content='tms,chat,wiki,translation,blog,markdown,group,team,teamwork,聊天,沟通,知识库,博文,国际化翻译,团队协作' name='Keywords'>
+    <meta content='TMS是免费开源的团队协作(团队沟通,博文知识库,国际化翻译i18n)web系统(响应式界面设计,移动端适配).' name='Description'>
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+    <title>TMS博文</title>
+    <!-- Include CSS for icons. -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.25.0/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.css" />
+    <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/latest/css/font-awesome.min.css" rel="stylesheet" type="text/css" /> -->
+    <link href="froala_editor.pkgd.min.css" rel="stylesheet" type="text/css" />
+    <!-- <link href="https://cdnjs.cloudflare.com/ajax/libs/froala-editor/2.8.4/css/froala_editor.pkgd.min.css" rel="stylesheet" type="text/css" /> -->
+    <!-- <link href="https://cdnjs.cloudflare.com/ajax/libs/froala-editor/2.8.4/css/froala_style.min.css" rel="stylesheet" type="text/css" /> -->
+    <link href="froala_style.min.css" rel="stylesheet" type="text/css" />
+    <!-- jQuery Modal -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.css" />
+    <style>
+        body {
+        text-align: center;
+    }
+
+    div#editor {
+        width: 70%;
+        margin: auto;
+        text-align: left;
+        position: relative;
+    }
+
+    .ss {
+        background-color: red;
+    }
+
+    .fr-wrapper>div[style*='z-index: 9999'] {
+        /*position: absolute;
+        top: -10000px;
+        opacity: 0;*/
+        display: none;
+    }
+
+    .fr-placeholder {
+        margin-top: 1px!important;
+    }
+
+    #toast-container {
+        z-index: 9999999999!important;
+    }
+
+    .topbar {
+        position: absolute;
+        top: -50px;
+        width: 100%;
+    }
+
+    .topbar>input {
+        /*width: 300px;*/
+        width: 100%;
+        font-size: 26px;
+        box-sizing: border-box;
+        /*box-shadow: none;*/
+        outline: 0;
+        border: 0;
+        box-shadow: 0px 1px 0px 0px #dddddd;
+        padding-right: 80px;
+    }
+
+    .topbar>.actions {
+        right: 0;
+        top: 0;
+        position: absolute;
+    }
+
+    .topbar>.actions button {
+        font-size: 12px;
+    }
+
+    #preview {
+        display: none;
+    }
+
+    .blocker {
+        z-index: 9999999999;
+    }
+
+    button.btn {
+        color: #fff;
+        background: #2185d0;
+        padding: .5rem 1rem;
+        display: inline-block;
+        border-radius: 4px;
+        transition-duration: .25s;
+        border: none;
+        font-size: 14px;
+    }
+
+    button.btn:hover {
+        background: #1678c2;
+    }
+
+    #saveFrm .row {
+        padding-bottom: 8px;
+    }
+
+    #saveFrm label {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+
+    #saveFrm select {
+        background:#fafdfe;  
+        height:28px;  
+        width:440px;
+        margin-top: 3px;
+        line-height:28px;  
+        border:1px solid #9bc0dd;  
+        -moz-border-radius:2px;  
+        -webkit-border-radius:2px;  
+    }
+
+    </style>
+</head>
+
+<body>
+    <div id="editor">
+        <div class="topbar">
+            <input id="title" type="text" placeholder="标题">
+            <div class="actions">
+                <button class="button -blue btn" id="save">保存</button>
+                <button class="button -blue btn" id="preview">预览</button>
+            </div>
+            <span id="msg" style="color: red; padding-left: 16px;"></span>
+        </div>
+        <div id='edit' style="margin-top: 60px; padding-bottom: 60px;"></div>
+    </div>
+    <!-- Modal HTML embedded directly into document -->
+    <div id="saveModal" class="modal">
+        <div id="saveFrm" style="padding-top: 16px;">
+            <div class="row">
+                <label>选择空间</label>
+                <select name="space"></select>
+            </div>
+            <div class="row">
+                <label>选择分类</label>
+                <select name="dir"></select>
+            </div>
+            <div class="row">
+                <input id="privated" type="checkbox">
+                <label for="privated">私有博文（不公开）</label>
+            </div>
+            <div class="row" style="padding-top: 16px;">
+                <button class="btnOk btn">确定</button>
+            </div>
+        </div>
+    </div>
+    <!-- <p><a href="#saveModal" rel="modal:open">Open Modal</a></p> -->
+    <!-- Include jQuery lib. -->
+    <!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script> -->
+    <script type="text/javascript" src="jquery.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.25.0/codemirror.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.25.0/mode/xml/xml.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/2.1.4/toastr.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/js-url/2.5.3/url.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-modal/0.9.1/jquery.modal.min.js"></script>
+    <!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.min.js"></script> -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.11/lodash.core.min.js"></script>
+    <!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsdiff/3.5.0/diff.min.js"></script> -->
+    <!-- Include Editor JS files. -->
+    <script type="text/javascript" src="froala_editor.pkgd.min.js"></script>
+    <!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/froala-editor/2.8.4/js/froala_editor.pkgd.min.js"></script> -->
+    <!-- <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/froala-editor/2.8.4/js/languages/zh_cn.js"></script> -->
+    <script>
+    $(function() {
+
+        var blog = null;
+
+        // toastr弹出消息提示插件全局配置设置
+        toastr.options.positionClass = 'toast-bottom-center';
+        toastr.options.preventDuplicates = true;
+
+        $.FroalaEditor.DefineIcon('save', { NAME: 'save' });
+        $.FroalaEditor.RegisterCommand('save', {
+            title: '保存博文 (Ctrl+Shift+S)',
+            focus: false,
+            undo: false,
+            refreshAfterCallback: false,
+            callback: function() {
+                $('#save').click();
+            }
+        });
+
+        $('#edit').froalaEditor({
+                // toolbarBottom: true,
+                toolbarButtons: ['fullscreen', 'bold', 'italic', 'underline', 'strikeThrough', 'subscript', 'superscript', 'fontFamily', 'fontSize', '|', 'color', 'inlineStyle', 'paragraphStyle', '|', 'paragraphFormat', 'align', 'formatOL', 'formatUL', 'outdent', 'indent', '-', 'save', '|', 'insertLink', 'insertImage', 'insertVideo', 'insertFile', 'insertTable', 'emoticons', 'specialCharacters', '|', 'quote', 'insertHR', 'undo', 'redo', 'clearFormatting', 'selectAll', 'print', 'help', 'html'],
+                fontFamilySelection: true,
+                fontSizeSelection: true,
+                paragraphFormatSelection: true,
+                wordPasteModal: false,
+                // enter: $.FroalaEditor.ENTER_BR,
+                enter: $.FroalaEditor.ENTER_DIV,
+                language: 'zh_cn',
+                fileMaxSize: 1024 * 1024 * 10,
+                imageUploadURL: '/admin/file/upload/img',
+                imageUploadParams: {
+                    toType: 'Blog',
+                    baseUrl: getBaseUrl()
+                },
+                fileUploadURL: '/admin/file/upload/file',
+                fileUploadParams: {
+                    toType: 'Blog',
+                    baseUrl: getBaseUrl()
+                },
+                imageManagerLoadURL: '/admin/file/upload/img/list',
+                imageManagerDeleteURL: "/admin/file/upload/img/remove",
+                imageManagerDeleteMethod: "POST"
+            }) // Catch image removal from the editor.
+            .on('froalaEditor.image.removed', function(e, editor, $img) {
+                $.ajax({
+                        method: "POST",
+                        url: "/admin/file/upload/img/remove",
+                        data: {
+                            src: $img.attr('src')
+                        }
+                    })
+                    .done(function(data) {
+                        console.log('image was deleted');
+                        // toastr && toastr.success('图片删除成功！');
+                    })
+                    .fail(function(err) {
+                        console.log('image delete problem: ' + JSON.stringify(err));
+                        toastr && toastr.error(JSON.stringify(err), '图片删除失败！');
+                    });
+            })
+            // Catch image removal from the editor.
+            .on('froalaEditor.file.unlink', function(e, editor, link) {
+                $.ajax({
+                        method: "POST",
+                        url: "/admin/file/upload/file/remove",
+                        data: {
+                            src: link.getAttribute('href')
+                        }
+                    })
+                    .done(function(data) {
+                        console.log('file was deleted');
+                        // toastr && toastr.success('文件删除成功！');
+                    })
+                    .fail(function(err) {
+                        console.log('file delete problem: ' + JSON.stringify(err));
+                        toastr && toastr.error(JSON.stringify(err), '文件删除失败！');
+                    });
+            }).on('froalaEditor.keydown', function(e, editor, keydownEvent) {
+                // console.log(keydownEvent);
+                if (keydownEvent.ctrlKey && keydownEvent.shiftKey && keydownEvent.keyCode === 83) { // ctrl+shift+s
+                    $('#save').click();
+                }
+            });
+
+        var id = url('?id');
+        if (id) {
+            $.get('/admin/blog/get', { id: id }, function(data) {
+                if (data.success) {
+                    if (typeof url('?copy') === 'undefined') { // edit
+                        blog = data.data;
+                        $('#title').val(data.data.title);
+                    } else {
+                        $('#title').val(data.data.title + ' (副本)');
+                    }
+
+                    $('#edit').froalaEditor('html.set', data.data.content);
+                    $('#preview').show();
+                } else {
+                    toastr.error(data.data);
+                }
+            });
+        }
+
+        $('#preview').click(function(event) {
+            var url = window.location.protocol + "//" + window.location.host + window.location.pathname.replace('blog.html', 'index.html') + "#/blog/" + blog.id;
+            openNewWin(url);
+        });
+
+        // 博文保存选择，空间 + 分类
+        var spaces = [];
+
+        $('#saveFrm select[name="space"]').change(function(event) {
+            var sid = $(this).val();
+            $('#saveFrm select[name="dir"]').empty().append($('<option/>').text('(不指定分类)').attr('value', ''));
+
+            if (sid !== '') {
+                $.each(spaces, function(index, space) {
+                    if (space.id == sid) {
+                        window._ && (space.dirs = _.sortBy(space.dirs, 'name'));
+                        $.each(space.dirs, function(index, dir) {
+                            if (dir.status != 'Deleted') {
+                                $('#saveFrm select[name="dir"]').append($('<option/>').text(dir.name).attr('value', dir.id));
+                            }
+                        });
+                        return false;
+                    }
+                });
+            }
+        });
+
+        $('#save').click(function(event) {
+
+            var title = $('#title').val();
+            var content = $('#edit').froalaEditor('html.get', true);
+
+            if (!title || !$.trim(title)) {
+                toastr && toastr.error('博文标题不能为空！');
+                return;
+            }
+
+            if (!content || !$.trim(content)) {
+                toastr && toastr.error('博文内容不能为空！');
+                return;
+            }
+
+            if (blog == null) {
+                $.get('/admin/space/listMy', function(data) {
+                    if (data.success) {
+
+                        spaces = data.data;
+
+                        $('#saveFrm select[name="space"]').empty().append($('<option/>').text('(不指定空间)').attr('value', ''));
+                        $('#saveFrm select[name="dir"]').empty().append($('<option/>').text('(不指定分类)').attr('value', ''));
+
+                        window._ && (spaces = _.sortBy(spaces, 'name'));
+                        $.each(spaces, function(index, space) {
+                            $('#saveFrm select[name="space"]').append($('<option/>').text(space.name).attr('value', space.id));
+                        });
+
+                        $('#saveModal').modal({
+                            fadeDuration: 200,
+                            clickClose: false
+                        });
+
+                    }
+                });
+            } else {
+                $.post('/admin/blog/update', {
+                    url: window.location.protocol + '//' + window.location.host + '/page/index.html',
+                    id: blog.id,
+                    version: blog.version,
+                    // usernames: '',
+                    // diff: diffS(blog.content, content),
+                    title: title,
+                    content: content
+                }, function(data, textStatus, xhr) {
+                    if (data.success) {
+                        blog = data.data;
+                        toastr && toastr.success('博文更新成功！');
+                        (window.parent && window.parent.postMessage) && (window.parent.postMessage({ action: 'updated', blog: data.data }, window.location.origin));
+                    } else {
+                        toastr && toastr.error(data.data);
+                    }
+                });
+            }
+        });
+
+        $('#saveFrm .btnOk').click(function(event) {
+
+            var title = $('#title').val();
+            var content = $('#edit').froalaEditor('html.get', true);
+
+            if (!title || !$.trim(title)) {
+                toastr && toastr.error('博文标题不能为空！');
+                return;
+            }
+
+            if (!content || !$.trim(content)) {
+                toastr && toastr.error('博文内容不能为空！');
+                return;
+            }
+
+            if (blog == null) {
+
+                $.modal.close();
+
+                $.post('/admin/blog/create', {
+                    url: window.location.protocol + '//' + window.location.host + '/page/index.html',
+                    // usernames: '',
+                    spaceId: $('#saveFrm select[name="space"]').val(),
+                    dirId: $('#saveFrm select[name="dir"]').val(),
+                    title: title,
+                    content: content,
+                    editor: 'Html',
+                    privated: $('#privated').prop("checked"),
+                    contentHtml: content
+                }, function(data, textStatus, xhr) {
+                    if (data.success) {
+                        blog = data.data;
+                        toastr && toastr.success('博文保存成功！');
+                        $('#preview').show();
+                        (window.parent && window.parent.postMessage) && (window.parent.postMessage({ action: 'created', blog: data.data }, window.location.origin));
+                    } else {
+                        toastr && toastr.error(data.data);
+                    }
+                });
+            }
+        });
+
+        $('#title').keyup(function(e) {
+            if (e.keyCode === 13) {
+                $('#edit').froalaEditor('events.focus');
+            }
+        });
+    });
+
+    function openNewWin(url) {
+
+        if (url) {
+            var $a = $(`<a href="${url}" target="_blank" style="display:none;"></a>`).appendTo('body').end();
+            $(`<input type="button">`).appendTo($a).end().click();
+
+            setTimeout(function() {
+                $a.remove();
+            }, 200);
+        }
+
+    }
+
+    function getBaseUrl() {
+        return window.location.protocol + '//' + window.location.host;
+    }
+
+    /**
+     * 文本比较
+     * @param  {[type]} oldS [description]
+     * @param  {[type]} newS [description]
+     * @return {[type]}      [description]
+     */
+    function diffS(oldS, newS, way) {
+        var ways = ['diffChars', 'diffWords', 'diffWordsWithSpace', 'diffLines'];
+        if (!ways.includes(way)) {
+            way = 'diffWords';
+        }
+        var delStyle = 'style="background-color: #e6cf56; text-decoration: line-through;"';
+        var insStyle = 'style="background-color: #98e287; text-decoration: none;"';
+        var diff = JsDiff[way](oldS, newS);
+        var nodeArr = [];
+        for (var i = 0; i < diff.length; i++) {
+
+            if (diff[i].added && diff[i + 1] && diff[i + 1].removed) {
+                var swap = diff[i];
+                diff[i] = diff[i + 1];
+                diff[i + 1] = swap;
+            }
+
+            var node;
+            if (diff[i].removed) {
+                node = `<del ${delStyle}>${diff[i].value}</del>`;
+            } else if (diff[i].added) {
+                node = `<ins ${insStyle}>${diff[i].value}</ins>`;
+            } else {
+                node = `${diff[i].value}`;
+            }
+            nodeArr.push(node);
+        }
+
+        return `<pre>${nodeArr.join('')}</pre>`;
+    }
+
+    </script>
+</body>
+
+</html>
