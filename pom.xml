@@ -190,6 +190,7 @@
 
 	</dependencies>
 	<build>
+		<finalName>tms</finalName>
 		<resources>
 			<resource>
 				<directory>src/main/resources</directory>
@@ -249,5 +250,6 @@
 		<system>github-tms-repo</system>
 		<url>https://github.com/xiwc/tms</url>
 	</ciManagement>
+
 	<packaging>war</packaging>
 </project>
